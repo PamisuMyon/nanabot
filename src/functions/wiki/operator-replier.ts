@@ -2,6 +2,7 @@ import { Message } from "mewbot";
 import { IBot, NoConfidence, Replied, Replier, ReplyFailed, ReplyResult, TestInfo, TestParams } from "mewbot";
 import { Util } from "../../commons/utils.js";
 import { ActionLog } from "../../models/action-log.js";
+import { Alias } from "../../models/ak/alias.js";
 import { Character, ICharacter } from "../../models/ak/character.js";
 
 export class OperatorReplier extends Replier {
@@ -18,7 +19,8 @@ export class OperatorReplier extends Replier {
         if (!msg.content) return NoConfidence;
         let char;
         if (this.isFuzzy) {
-            char = await Character.findFuzzyOne('name', msg.content);
+            const alias = Alias.getRandomOneByAlias(msg.content);
+            char = await Character.findFuzzyOne('name', alias? alias.name : msg.content);
         } else {
             char = await Character.findOne({ name: msg.content });
         }

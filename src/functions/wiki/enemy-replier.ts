@@ -2,6 +2,7 @@ import { Message } from "mewbot";
 import { IBot, NoConfidence, Replied, Replier, ReplyFailed, ReplyResult, TestInfo, TestParams } from "mewbot";
 import { Util } from "../../commons/utils.js";
 import { ActionLog } from "../../models/action-log.js";
+import { Alias } from "../../models/ak/alias.js";
 import { Enemy, IEnemy } from "../../models/ak/enemy.js";
 
 export class EnemyReplier extends Replier {
@@ -18,7 +19,8 @@ export class EnemyReplier extends Replier {
         if (!msg.content) return NoConfidence;
         let enemy;
         if (this.isFuzzy) {
-            enemy = await Enemy.findFuzzyOne('name', msg.content);
+            const alias = Alias.getRandomOneByAlias(msg.content);
+            enemy = await Enemy.findFuzzyOne('name', alias? alias.name : msg.content);
         } else {
             enemy = await Enemy.findOne({ name: msg.content });
         }
