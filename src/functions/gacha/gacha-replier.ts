@@ -8,7 +8,7 @@ import { GachaInst } from "./gacha.js";
 export class GachaReplier extends Replier {
 
     type = 'gacha';
-    protected _regex = /(寻访十次|尋訪十次|寻访十连|尋訪十連|十次寻访|十次尋訪|十连|十連|抽十次|寻访|尋訪) *(.*)/;
+    protected _regex = /(寻访十次|尋訪十次|寻访十连|尋訪十連|十次寻访|十次尋訪|十连|十連|抽十次|寻访|尋訪|单抽|單抽) *(.*)/;
 
     protected override checkSpam(topic_id: string, targetId: string) {
         const spam = this._spams[topic_id];
@@ -30,6 +30,10 @@ export class GachaReplier extends Replier {
     }
 
     override async reply(bot: IBot, msg: Message, test: TestInfo): Promise<ReplyResult> {
+        if (!await this.checkAvailable(bot, msg)) {
+            return Replied;
+        }
+
         // Spam
         if (!msg._isDirect) {
             const check = this.checkSpam(msg.topic_id, msg.topic_id);
@@ -78,8 +82,20 @@ export class GachaReplier extends Replier {
             reply += `\n距离上次抽到6★: ${roll.waterLevel}次寻访`;
         }
         
-        await bot.replyText(msg, reply);
+        const replyMsg = await bot.replyText(msg, reply);
         await ActionLog.log(this.type, msg, reply);
+        if (replyMsg.data && replyMsg.data.id) {
+            const config = this.getConfig(bot, msg.topic_id);
+            if (config && config.recall) {
+                return { 
+                    success: true, 
+                    recall: {
+                        messageId: replyMsg.data.id,
+                        delay: config.delay? config.delay : 1800000
+                    }
+                };
+            }
+        }
         return Replied;
     }
 

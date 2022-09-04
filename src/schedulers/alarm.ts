@@ -6,10 +6,12 @@ import { Pxkore, PxkoreOptions } from '../functions/picture/pxkore.js';
 import { Handbook } from '../models/ak/handbook.js';
 import { Sentence } from '../models/sentence.js';
 import { ServerImage } from '../models/server-image.js';
+import { ActionLog } from '../models/action-log.js';
 
 
 export class Alarm {
 
+    type = 'alarm';
     protected _bot: IBot;
 
     constructor(bot: IBot) {
@@ -56,7 +58,8 @@ export class Alarm {
                     }
                     logger.debug(`Morning message to ${topic}, content: ${content}`);
                     if (content) {
-                        await this._bot.client.sendTextMessage(key, content);
+                        const result = await this._bot.client.sendTextMessage(key, content);
+                        await ActionLog.logMessage(this.type, result);
                         await Util.sleep(500);
                     }
                 }
@@ -89,7 +92,8 @@ export class Alarm {
                     }
                     logger.debug(`Noon message to ${topic}, content: ${content}`);
                     if (content) {
-                        await this._bot.client.sendTextMessage(key, content);
+                        const result = await this._bot.client.sendTextMessage(key, content);
+                        await ActionLog.logMessage(this.type, result);
                         await Util.sleep(500);
                     }
                 }
@@ -122,7 +126,8 @@ export class Alarm {
                     }
                     logger.debug(`Night message to ${topic}, content: ${content}`);
                     if (content) {
-                        await this._bot.client.sendTextMessage(key, content);
+                        const result = await this._bot.client.sendTextMessage(key, content);
+                        await ActionLog.logMessage(this.type, result);
                         await Util.sleep(500);
                     }
                 }
@@ -148,7 +153,8 @@ export class Alarm {
                     if (!scheduleConfig || !scheduleConfig.birthday)
                         continue;
 
-                    await this._bot.client.sendTextMessage(key, birthdayMsg);
+                    const result = await this._bot.client.sendTextMessage(key, birthdayMsg);
+                    await ActionLog.logMessage(this.type, result);
                     await Util.sleep(500);
                 }
             })();
@@ -182,6 +188,7 @@ export class Alarm {
                             Util.sleep(200);
                             this._bot.client.sendTextMessage(key, result.info);
                         }
+                        await ActionLog.logMessage(this.type, imageMsg, result.data);
                         Util.sleep(200);
                     }
                 }

@@ -12,7 +12,7 @@
   "dependencies": {
     "got": "=12.3.0",
     "hpagent": "^1.0.0",
-    "mewbot": "^1.0.4-beta3",
+    "mewbot": "^1.0.4-beta4",
     "mongodb": "^4.8.1",
     "node-schedule": "^2.1.0"
   },

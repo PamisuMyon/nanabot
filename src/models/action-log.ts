@@ -37,7 +37,7 @@ export class ActionLogCol extends Col<IActionLog> {
             name: msg._author.name,
             username: msg._author.username,
             userId: msg.author_id,
-            isDirect: false,
+            isDirect: msg._isDirect,
             topicId: msg.topic_id,
             nodeId: msg.node_id,
             createdAt: new Date(msg.created_at),
@@ -45,6 +45,37 @@ export class ActionLogCol extends Col<IActionLog> {
             data,
         };
 
+        return this.col.insertOne(l);
+    }
+
+    async logMessage(type: string, msgResult: Result<Message>, data?: any) {
+        let l: IActionLog;
+        if (msgResult.data) {
+            const msg = msgResult.data;
+            l = {
+                type,
+                content: this.getMessageContentForLog(msgResult),
+                media: msg._media,
+                reply: '',
+                name: msg._author.name,
+                username: msg._author.username,
+                userId: msg.author_id,
+                isDirect: msg._isDirect,
+                topicId: msg.topic_id,
+                nodeId: msg.node_id,
+                createdAt: new Date(msg.created_at),
+                repliedAt: new Date(),
+                data,
+            };
+        } else {
+            l = {
+                type,
+                content: this.getMessageContentForLog(msgResult),
+                createdAt: new Date(),
+                repliedAt: new Date(),
+                data,
+            } as IActionLog;
+        }
         return this.col.insertOne(l);
     }
 

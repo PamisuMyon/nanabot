@@ -37,7 +37,7 @@ export class TextRecruitReplier extends Replier {
         }
         // 根据tag计算
         const reuslts = await RecruitInst.calculate(split);
-        reply = RecruitInst.beautifyRecruitResults(reuslts);
+        reply = '🔍' + RecruitInst.beautifyRecruitResults(reuslts);
 
         await bot.replyText(msg, reply);
         await ActionLog.log(this.type, msg, reply);

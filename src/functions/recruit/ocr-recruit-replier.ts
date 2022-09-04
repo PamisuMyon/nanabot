@@ -54,7 +54,7 @@ export class OcrRecruitReplier extends Replier {
 
         // 根据tag计算
         const reuslts = await RecruitInst.calculate(tags);
-        reply = '识别到的标签：\n';
+        reply = '🔍识别到的标签：\n';
         for (const tag of tags) {
             reply += tag + ' ';
         }
