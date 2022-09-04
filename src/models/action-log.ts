@@ -1,4 +1,4 @@
-import { Media, Message, Result } from "mewbot";
+import { Media, Message, refine, Result } from "mewbot";
 import { Col } from "./db.js";
 
 export interface IActionLog {
@@ -52,6 +52,8 @@ export class ActionLogCol extends Col<IActionLog> {
         let l: IActionLog;
         if (msgResult.data) {
             const msg = msgResult.data;
+            if (!msg._author)
+                refine(msg);
             l = {
                 type,
                 content: this.getMessageContentForLog(msgResult),

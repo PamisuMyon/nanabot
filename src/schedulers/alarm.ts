@@ -153,6 +153,7 @@ export class Alarm {
                     if (!scheduleConfig || !scheduleConfig.birthday)
                         continue;
 
+                    logger.debug(`Birthday message to ${topic}, content: ${birthdayMsg}`);
                     const result = await this._bot.client.sendTextMessage(key, birthdayMsg);
                     await ActionLog.logMessage(this.type, result);
                     await Util.sleep(500);
@@ -183,6 +184,7 @@ export class Alarm {
                     };
                     const result = await Pxkore.request(options);
                     if (result && result.path) {
+                        logger.debug(`Image message to ${key}, content: ${result.path}`);
                         const imageMsg = await this._bot.sendImageWithCache(key, result.path, ServerImage);
                         if (result.info && imageMsg.data && imageMsg.data.id) {
                             Util.sleep(200);
@@ -190,6 +192,8 @@ export class Alarm {
                         }
                         await ActionLog.logMessage(this.type, imageMsg, result.data);
                         Util.sleep(200);
+                    } else {
+                        logger.error(`Image message to ${key} failed.`);
                     }
                 }
             })();
