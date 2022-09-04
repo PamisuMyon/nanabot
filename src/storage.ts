@@ -60,9 +60,11 @@ export class MongoStorage implements IBotStorage {
                 updateOne: {
                     filter: { id: v.id },
                     update: {
-                        id: v.id,
-                        username: v.username,
-                        name: v.name,
+                        $set: {
+                            id: v.id,
+                            username: v.username,
+                            name: v.name,
+                        }
                     },
                     upsert: true
                 }
