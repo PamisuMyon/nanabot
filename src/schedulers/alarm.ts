@@ -17,19 +17,20 @@ export class Alarm {
     }
 
     schedule() {
-        this.scheduleMorning();
-        this.scheduleNight();
-        this.scheduleBirthday();
-        this.schedulePicture(12, 30, 0);
-        this.schedulePicture(18, 30, 0);
+        this.scheduleMorning(7, 30, 1);
+        // this.scheduleNoon(12, 30, 1);
+        this.scheduleNight(22, 30, 1);
+        this.scheduleBirthday(0, 0, 22);
+        this.schedulePicture(12, 30, 1);
+        this.schedulePicture(18, 30, 1);
         logger.debug('Alarms scheduled.');
     }
 
-    protected scheduleMorning() {
+    protected scheduleMorning(hour: number, minute: number, second: number) {
         const rule = new schedule.RecurrenceRule();
-        rule.hour = 7;
-        rule.minute = 30;
-        rule.second = 0;
+        rule.hour = hour;
+        rule.minute = minute;
+        rule.second = second;
         schedule.scheduleJob(rule, (date) => {
             (async () => {
                 const birthdayMsg = await Handbook.getBirthDayMessageSimple(date);
@@ -63,11 +64,11 @@ export class Alarm {
         });
     }
 
-    protected scheduleNoon() {
+    protected scheduleNoon(hour: number, minute: number, second: number) {
         const rule = new schedule.RecurrenceRule();
-        rule.hour = 12;
-        rule.minute = 30;
-        rule.second = 0;
+        rule.hour = hour;
+        rule.minute = minute;
+        rule.second = second;
         schedule.scheduleJob(rule, (date) => {
             (async () => {
                 const config = this._bot.config;
@@ -96,11 +97,11 @@ export class Alarm {
         });
     }
 
-    protected scheduleNight() {
+    protected scheduleNight(hour: number, minute: number, second: number) {
         const rule = new schedule.RecurrenceRule();
-        rule.hour = 22;
-        rule.minute = 30;
-        rule.second = 0;
+        rule.hour = hour;
+        rule.minute = minute;
+        rule.second = second;
         schedule.scheduleJob(rule, (date) => {
             (async () => {
                 const config = this._bot.config;
@@ -130,11 +131,11 @@ export class Alarm {
     }
 
 
-    protected scheduleBirthday() {
+    protected scheduleBirthday(hour: number, minute: number, second: number) {
         const rule = new schedule.RecurrenceRule();
-        rule.hour = 0;
-        rule.minute = 0;
-        rule.second = 22;
+        rule.hour = hour;
+        rule.minute = minute;
+        rule.second = second;
         schedule.scheduleJob(rule, (date) => {
             (async () => {
                 const birthdayMsg = await Handbook.getBirthDayMessageSimple(date);
