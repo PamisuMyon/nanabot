@@ -9,6 +9,7 @@ export class ChatReplier extends Replier {
 
     type = 'chat';
     protected _chatter: Chatter = new Chatter();
+    protected _regex = /^(stamp|thought):(.+)$/;
 
     override async test(msg: Message, options: TestParams): Promise<TestInfo> {
         if (options.isCommandMode) return NoConfidence;
@@ -39,7 +40,7 @@ export class ChatReplier extends Replier {
         // Conversations
         const convReply = this._chatter.getConversationReply(msg.content);
         if (convReply && convReply.priority == ConversationPriority.High) {
-            await bot.replyText(msg, convReply.content);
+            await this.doReply(bot, msg, convReply.content);
             await ActionLog.log(this.type, msg, convReply.content);
             return Replied;
         }
@@ -67,9 +68,21 @@ export class ChatReplier extends Replier {
             reply = Sentence.getRandomOne('test')!;
         }
 
-        await bot.replyText(msg, reply);
+        await this.doReply(bot, msg, reply);
         await ActionLog.log(this.type, msg, reply);
         return Replied;
+    }
+
+    async doReply(bot: IBot, msg: Message, reply: string) {
+        const r = this._regex.exec(reply);
+        if (r) {
+            if (r[1] == 'stamp') {
+                return await bot.replyStamp(msg, r[2]);
+            } else if (r[1] == 'thought') {
+                return await bot.replyThought(msg, r[2]);
+            }
+        }
+        return await bot.replyText(msg, reply);
     }
 
 }

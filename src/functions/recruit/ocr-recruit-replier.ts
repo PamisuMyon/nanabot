@@ -11,7 +11,8 @@ export class OcrRecruitReplier extends Replier {
     type = 'recruit/ocr';
 
     override async test(msg: Message, options: TestParams): Promise<TestInfo> {
-        if (!msg._isDirect && !options.isReplyMe) return NoConfidence;
+        // if (!msg._isDirect && !options.isReplyMe) return NoConfidence;
+        if (!msg._isDirect) return NoConfidence;
         if (!msg._media || msg._media.length == 0) return NoConfidence;
         return FullConfidence;
     }

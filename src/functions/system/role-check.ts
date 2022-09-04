@@ -8,7 +8,7 @@ export abstract class RoleCheckSubReplier extends Replier {
     protected abstract _roles: UserRole[];
 
     override async test(msg: Message, options: TestParams): Promise<TestInfo> {
-        // if (!msg._isDirect) return NoConfidence;
+        if (!msg._isDirect) return NoConfidence;
         if (!msg.content) return NoConfidence;
         const r = this._regex.exec(msg.content);
         if (r) {
