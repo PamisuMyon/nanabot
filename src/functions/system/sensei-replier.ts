@@ -29,7 +29,7 @@ abstract class SenseiSubReplier extends RoleCheckSubReplier {
 
 class LearnReplier extends SenseiSubReplier {
 
-    protected _regex = /^问 *　*\n.*?\n答 *　*\n.*/;
+    protected _regex = /^问\n(.*\n)*答\n.*/;
 
     async reply(bot: IBot, msg: Message, test: TestInfo): Promise<ReplyResult> {
         const lines = msg.content!.split('\n');
