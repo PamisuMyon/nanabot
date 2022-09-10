@@ -1,6 +1,7 @@
 import { Message } from "mewbot";
 import { IBot, NoConfidence, Replied, Replier, ReplyFailed, ReplyResult, TestInfo, TestParams } from "mewbot";
 import { ActionLog } from "../../models/action-log.js";
+import { Alias } from "../../models/ak/alias.js";
 import { IRoguelikeItem, RoguelikeItem } from "../../models/ak/roguelike-item.js";
 
 export class RoguelikeItemReplier extends Replier {
@@ -17,7 +18,8 @@ export class RoguelikeItemReplier extends Replier {
         if (!msg.content) return NoConfidence;
         let item;
         if (this.isFuzzy) {
-            item = await RoguelikeItem.findFuzzyOne('name', msg.content);
+            const alias = Alias.getRandomOneByAlias(msg.content);
+            item = await RoguelikeItem.findFuzzyOne('name', alias? alias.name : msg.content);
         } else {
             item = await RoguelikeItem.findOne({ name: msg.content });
         }
