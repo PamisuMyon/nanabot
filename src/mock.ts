@@ -1,4 +1,4 @@
-import { Message, logger, LogLevel, OutgoingMessage, Result, Util, FileUtil } from 'mewbot';
+import { Message, logger, LogLevel, OutgoingMessage, Result, Util, FileUtil, IServerImageDao } from 'mewbot';
 import * as readline from 'readline';
 import * as fs from 'fs';
 import { MesageReplyMode } from 'mewbot';
@@ -6,11 +6,12 @@ import { AkDataImporter } from './functions/gamedata/ak-data-importer.js';
 import { NanaBot } from './nana-bot.js';
 import { DbUtil } from './models/db.js';
 import { ObjectId } from 'mongodb';
+import { MongoStorage } from './storage.js';
 
 class MockBot extends NanaBot {
     
     override async reply(to: Message, message: OutgoingMessage, messageReplyMode?: MesageReplyMode | undefined): Promise<Result<Message>> {
-        logger.debug(`Message: ${to.content}  Reply:`);
+        logger.debug(`[Mock] Message: ${to.content}  Reply:`);
         logger.dir(message);
         if (to._author)
             this._defender.record(to._author);
@@ -18,16 +19,42 @@ class MockBot extends NanaBot {
     }
 
     override async replyText(to: Message, content: string, messageReplyMode?: MesageReplyMode) {
-        logger.debug(`Message: ${to.content}  Reply Text: ${content}`);
+        logger.debug(`[Mock] Message: ${to.content}  Reply Text: ${content}`);
         if (to._author)
             this._defender.record(to._author);
         return { data: { id: 'somefakeid' } as Message };
     }
 
-    async replyImage(to: Message, imageFile: string, messageReplyMode?: MesageReplyMode) {
-        logger.debug(`Message: ${to.content}  Reply Image: ${imageFile}`);
+    override async replyImage(to: Message, imageFile: string, messageReplyMode?: MesageReplyMode) {
+        logger.debug(`[Mock] Message: ${to.content}  Reply Image: ${imageFile}`);
         if (to._author)
             this._defender.record(to._author);
+        return { data: { id: 'somefakeid' } as Message };
+    }
+
+    override async replyThought(to: Message, thoughtId: string, messageReplyMode?: MesageReplyMode | undefined): Promise<Result<Message>> {
+        logger.debug(`[Mock] Message: ${to.content}  Reply thought: ${thoughtId}`);
+        if (to._author)
+            this._defender.record(to._author);
+        return { data: { id: 'somefakeid' } as Message };
+    }
+
+    override async replyStamp(to: Message, stampId: string, messageReplyMode?: MesageReplyMode | undefined): Promise<Result<Message>> {
+        logger.debug(`[Mock] Message: ${to.content}  Reply stamp: ${stampId}`);
+        if (to._author)
+            this._defender.record(to._author);
+        return { data: { id: 'somefakeid' } as Message };
+    }
+
+    override async replyImageWithCache(to: Message, imageFile: string, dao: IServerImageDao, messageReplyMode?: MesageReplyMode | undefined): Promise<Result<Message>> {
+        logger.debug(`[Mock] Message: ${to.content}  Reply image: ${imageFile}`);
+        if (to._author)
+            this._defender.record(to._author);
+        return { data: { id: 'somefakeid' } as Message };
+    }
+
+    override async sendImageWithCache(topic_id: string, imageFile: string, dao: IServerImageDao): Promise<Result<Message>> {
+        logger.debug(`[Mock] Message to: ${topic_id}  Image: ${imageFile}`);
         return { data: { id: 'somefakeid' } as Message };
     }
 
@@ -130,4 +157,13 @@ async function backup(includeGameData = false) {
     logger.debug('Backup finished.');
 }
 
+async function updateData() {
+    logger.logLevel = LogLevel.Debug;
+    await new MongoStorage().init();
+    logger.debug('Updating data.');
+    await AkDataImporter.updateAll(proxy);
+    logger.debug('Data updated.');
+}
+
 consoleTest();
+// updateData();

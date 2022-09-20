@@ -256,7 +256,7 @@ class SetuReplier extends Replier {
             error = this._downloadErrorHint;
         }
         await Util.sleep(100);
-        if (illust && illust.info) {
+        if (illust && illust.info && !error) {
             await bot.replyText(msg, illust.info, MesageReplyMode.None, false);
             await Util.sleep(100);
         }

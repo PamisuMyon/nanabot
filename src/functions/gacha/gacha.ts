@@ -71,6 +71,7 @@ export class Gacha {
             }
         }
 
+        // 创建卡池信息
         for (const pickup of pickups) {
             const pool: Pool = {
                 name: pickup.name,
@@ -85,15 +86,14 @@ export class Gacha {
                 .concat(pickup['5'])
                 .concat(pickup['4']);
             for (const op of availOps) {
-                if (op.rarity < 2) {
-                    continue;
-                }
-                if (pool.ignore && pool.ignore.indexOf(op.name) != -1) {
-                    continue;
-                }
-                if (pool.pickupNames.indexOf(op.name) == -1) {
-                    pool.operators.push(op);
-                }
+                if (op.rarity < 2) continue;
+                if (pool.ignore && pool.ignore.indexOf(op.name) != -1) continue;
+                if (pool.pickupNames.indexOf(op.name) != -1) continue;
+                if (op.rarity == 5 && pickup.is6UpOnly) continue;
+                if (op.rarity == 4 && pickup.is5UpOnly) continue;
+                if (op.rarity == 3 && pickup.is4UpOnly) continue;
+
+                pool.operators.push(op);
             }
             this.pools[pool.name] = pool;
         }
@@ -162,7 +162,7 @@ export class Gacha {
             let ops: Operator[] = [];
             if (rarity == 5) {
                 if (pool.pickup['6'] && pool.pickup['6'].length > 0) {
-                    const num = Util.randomInt(1, 100);
+                    const num = pool.pickup.is6UpOnly? 100 : Util.randomInt(1, 100);
                     let p = 51;
                     if (pool.type.indexOf('limited') != -1) {
                         p = 31; // 限定池6星up占70%
@@ -178,7 +178,7 @@ export class Gacha {
                 }
             } else if (rarity == 4) {
                 if (pool.pickup['5'] && pool.pickup['5'].length > 0) {
-                    const num = Util.randomInt(1, 100);
+                    const num = pool.pickup.is5UpOnly? 100 : Util.randomInt(1, 100);
                     if (num >= 51) {
                         for (const item of pool.pickup['5']) {
                             ops.push({
@@ -190,7 +190,7 @@ export class Gacha {
                 }
             } else if (rarity == 3) {
                 if (pool.pickup['4'] && pool.pickup['4'].length > 0) {
-                    const num = Util.randomInt(1, 100);
+                    const num = pool.pickup.is4UpOnly? 100 :  Util.randomInt(1, 100);
                     if (num >= 81) {
                         for (const item of pool.pickup['4']) {
                             ops.push({
