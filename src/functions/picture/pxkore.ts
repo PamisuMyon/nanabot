@@ -145,11 +145,11 @@ export class Pxkore {
                 return cachePath;
             } else {
                 logger.error('Illust download failed: ' + fileName);
-                return '';
+                return null;
             }
         } catch (err) {
             logger.error(err);
-            return '';
+            return null;
         }
     }
 

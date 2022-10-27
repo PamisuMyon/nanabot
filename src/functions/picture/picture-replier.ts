@@ -271,24 +271,28 @@ class SetuReplier extends Replier {
                 if (!path) {
                     path = await Pxkore.download(illust.url, illust.fileName);
                 }
-                illust.path = path;
-    
-                // Upload
-                const result = await bot.client.uploadImage2(illust.path);
-                // Record server cache & send message
-                if (result.data && result.data.id) {
-                    const info = result.data;
-                    await ServerImage.insertOne({ fileName: illust.fileName, info });
-
-                    const msgResult = await bot.reply(msg, { media: [info.id] });
-                    await ActionLog.log(this.type, msg, msgResult, illust.data);
+                if (!path) {
+                    error = this._downloadErrorHint;
                 } else {
-                    error = this._sendErrorHint;
-                }
-
-                // Delete local file
-                if (this._pictureConfig.transientMode) {
-                    FileUtil.delete(illust.path);
+                    illust.path = path;
+    
+                    // Upload
+                    const result = await bot.client.uploadImage2(illust.path);
+                    // Record server cache & send message
+                    if (result.data && result.data.id) {
+                        const info = result.data;
+                        await ServerImage.insertOne({ fileName: illust.fileName, info });
+    
+                        const msgResult = await bot.reply(msg, { media: [info.id] });
+                        await ActionLog.log(this.type, msg, msgResult, illust.data);
+                    } else {
+                        error = this._sendErrorHint;
+                    }
+    
+                    // Delete local file
+                    if (this._pictureConfig.transientMode) {
+                        FileUtil.delete(illust.path);
+                    }
                 }
             }
         } else {
