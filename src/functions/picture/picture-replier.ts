@@ -1,9 +1,11 @@
 import { logger, LogLevel, Message } from "mewbot";
 import got from "got";
-import { MatryoshkaReplier, TestInfo, IBot, ReplyResult, Util, FileUtil, NetUtil, Replier, TestParams, FullConfidence, NoConfidence, Replied, MesageReplyMode, Spam } from "mewbot";
+import { MatryoshkaReplier, TestInfo, IBot, ReplyResult, Util, FileUtil, Replier, TestParams, FullConfidence, NoConfidence, Replied, MesageReplyMode, Spam } from "mewbot";
 import { Pxkore, PxkoreOptions } from "./pxkore.js";
 import { ServerImage } from "../../models/server-image.js";
 import { ActionLog } from "../../models/action-log.js";
+import { MiscConfig } from "../../models/config.js";
+import { NetUtil } from "../../commons/net-util.js";
 
 export class PictureReplier extends MatryoshkaReplier {
     
@@ -63,10 +65,9 @@ abstract class PictureSubReplier extends Replier {
             const imageMsg = await bot.replyImage(msg, file);
             if (!imageMsg.data || !imageMsg.data.id) {
                 error = this._sendErrorHint;
-            } else {
-                // 删除缓存文件
-                await FileUtil.delete(file);
             }
+            // 删除缓存文件
+            FileUtil.delete(file);
             await ActionLog.log(this.type, msg, imageMsg);
         } else {
             error = this._downloadErrorHint;
@@ -182,11 +183,17 @@ class SetuReplier extends Replier {
     protected _downloadErrorHint = '图片被猫猫吞噬了，请博士稍后再试。';
     protected _sendErrorHint = '图片发送过程中发生致命错误，您的开水壶已被炸毁。';
     protected _temporarySpam!: Spam;
+    protected _pictureConfig = {
+        transientMode: true,
+    };
 
     override async init(bot: IBot) {
         await super.init(bot);
         if (!this._temporarySpam)
             this._temporarySpam = new Spam(0, 1, 5000);
+        const conf = await MiscConfig.findOneByName<any>('pictureConfig');
+        if (conf)
+            this._pictureConfig = conf;
     }
 
     override async test(msg: Message, options: TestParams): Promise<TestInfo> {
@@ -244,14 +251,46 @@ class SetuReplier extends Replier {
         }
         
         const hint = await bot.replyText(msg, this._downloadingHint);
+        // Request pxkore server
         const illust = await Pxkore.request(options);
         let error;
         if (illust) {
-            const imageMsg = await bot.replyImageWithCache(msg, illust.path, ServerImage);
-            if (!imageMsg.data || !imageMsg.data.id) {
-                error = this._sendErrorHint;
+            // Use server cache if it already exists
+            const serverImageInfo = await ServerImage.getCache(illust.fileName);
+            if (serverImageInfo) {
+                logger.debug('Use server image cache: ' + serverImageInfo.url);
+                const msgResult = await bot.reply(msg, { media: [serverImageInfo.id] });
+                await ActionLog.log(this.type, msg, msgResult, illust.data);
+            } else {
+                // Else download file and upload to server
+                // Get local file path
+                let path: string | null = null;
+                if (!this._pictureConfig.transientMode) {
+                    path = await Pxkore.getFromStorage(illust.fileName);
+                }
+                if (!path) {
+                    path = await Pxkore.download(illust.url, illust.fileName);
+                }
+                illust.path = path;
+    
+                // Upload
+                const result = await bot.client.uploadImage2(illust.path);
+                // Record server cache & send message
+                if (result.data && result.data.id) {
+                    const info = result.data;
+                    await ServerImage.insertOne({ fileName: illust.fileName, info });
+
+                    const msgResult = await bot.reply(msg, { media: [info.id] });
+                    await ActionLog.log(this.type, msg, msgResult, illust.data);
+                } else {
+                    error = this._sendErrorHint;
+                }
+
+                // Delete local file
+                if (this._pictureConfig.transientMode) {
+                    FileUtil.delete(illust.path);
+                }
             }
-            await ActionLog.log(this.type, msg, imageMsg, illust.data);
         } else {
             error = this._downloadErrorHint;
         }

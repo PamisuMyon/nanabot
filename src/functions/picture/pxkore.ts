@@ -1,6 +1,7 @@
 import got from "got";
 import { logger } from "mewbot";
-import { FileUtil, NetUtil, Util } from "mewbot";
+import { FileUtil, Util } from "mewbot";
+import { NetUtil } from "../../commons/net-util.js";
 import { MiscConfig } from "../../models/config.js";
 
 export interface PxkoreOptions {
@@ -16,8 +17,10 @@ export interface PxkoreOptions {
     appendTotalSampleInfo: boolean;
 }
 
-export interface PxkoreResult{
-    path: string;
+export interface PxkoreResult {
+    fileName: string;
+    url: string;
+    path?: string;
     data: any;
     totalSample: number;
     fallback: boolean;
@@ -50,7 +53,7 @@ export class Pxkore {
             info += data.title;
         }
         info += '  by ' + data.author_name;
-        info += '  作品id: ' + data.id;
+        info += '  ID: ' + data.id;
         if (o.appendTotalSampleInfo) {
             if (!o.isRandomSample && result.totalSample > 0 && !result.fallback)
                 info += `    -🖼${result.totalSample}-`;
@@ -107,9 +110,10 @@ export class Pxkore {
                 const imageUrl = data.urls.regular;
                 const split = imageUrl.split('/');
                 const fileName = split[split.length - 1];
-                const path = await this.downloadFile(imageUrl, fileName);
+                // const path = await this.download(imageUrl, fileName);
                 return { 
-                    path, 
+                    url: imageUrl,
+                    fileName,
                     data, 
                     totalSample: body.totalSample as number, 
                     fallback: body.fallback as boolean,
@@ -122,17 +126,27 @@ export class Pxkore {
         }
     }
 
-    private static async downloadFile(fileUrl: string, fileName: string) {
-        const cachePath = '../storage/illusts/' + fileName;
+    public static async getFromStorage(fileName: string) {
+        const storagePath = '../storage/illusts/' + fileName;
+        if (await FileUtil.exists(storagePath)) {
+            logger.debug('Use illust from cache: ' + fileName);
+            return storagePath;
+        }
+        return null;
+    }
+
+    public static async download(fileUrl: string, fileName: string) {
+        const cachePath = './cache/illusts/' + fileName;
         try {
-            if (await FileUtil.exists(cachePath)) {
-                logger.debug('Use illust from cache: ' + fileName);
-                return cachePath;
-            }
             logger.debug('Start downloading of illust: ' + fileUrl);
-            await NetUtil.download(fileUrl, cachePath);
-            logger.debug('Illust downloaded: ' + fileName);
-            return cachePath;
+            const result = await NetUtil.download(fileUrl, cachePath);
+            if (result) {
+                logger.debug('Illust downloaded: ' + fileName);
+                return cachePath;
+            } else {
+                logger.error('Illust download failed: ' + fileName);
+                return '';
+            }
         } catch (err) {
             logger.error(err);
             return '';

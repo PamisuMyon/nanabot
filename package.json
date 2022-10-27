@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "start": "node dist/app.js",
-    "mock": "node dist/mock.js"
+    "mock": "node dist/mock.js",
+    "debug": "node dist/debug.js"
   },
   "author": "Pamisu",
   "license": "MIT",
   "dependencies": {
     "got": "=12.3.0",
     "hpagent": "^1.0.0",
-    "mewbot": "^1.0.4",
+    "mewbot": "^1.0.5-beta3",
     "mongodb": "^4.8.1",
     "node-schedule": "^2.1.0"
   },

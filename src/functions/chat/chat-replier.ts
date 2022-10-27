@@ -1,4 +1,4 @@
-import { Message } from "mewbot";
+import { Message, OutgoingMessage } from "mewbot";
 import { Replier, TestParams, TestInfo, NoConfidence, FullConfidence, IBot, ReplyResult, Replied, Util, ReplyFailed } from "mewbot";
 import { ActionLog } from "../../models/action-log.js";
 import { ConversationPriority } from "../../models/conversation.js";
@@ -9,7 +9,7 @@ export class ChatReplier extends Replier {
 
     type = 'chat';
     protected _chatter: Chatter = new Chatter();
-    protected _regex = /^(stamp|thought):(.+)$/;
+    protected _regex = /^(stamp|thought|image):(.+)$/;
 
     override async test(msg: Message, options: TestParams): Promise<TestInfo> {
         if (options.isCommandMode) return NoConfidence;
@@ -80,6 +80,11 @@ export class ChatReplier extends Replier {
                 return await bot.replyStamp(msg, r[2]);
             } else if (r[1] == 'thought') {
                 return await bot.replyThought(msg, r[2]);
+            } else if (r[1] == 'image') {
+                const re: OutgoingMessage = {
+                    media: [r[2]],
+                };
+                return await bot.reply(msg, re);
             }
         }
         return await bot.replyText(msg, reply);

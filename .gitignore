@@ -111,3 +111,4 @@ dist/
 cache/
 /storage/*
 !/storage/*.sample.json
+src/debug.ts

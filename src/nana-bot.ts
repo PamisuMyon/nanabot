@@ -1,4 +1,4 @@
-import { MewBot } from "mewbot";
+import { ConnectOptions, InitOptions, MewBot, MewClient, ServerInfo } from "mewbot";
 import { ChatReplier } from "./functions/chat/chat-replier.js";
 import { DiceReplier } from "./functions/dice/dice-replier.js";
 import { GachaReplier } from "./functions/gacha/gacha-replier.js";
@@ -32,9 +32,45 @@ export class NanaBot extends MewBot {
         new ChatReplier(),
     ];
 
+
+    constructor(options?: InitOptions) {
+        super(options);
+        const opt: Partial<ConnectOptions> = {
+            serverInfo: vrollServerInfo
+        };
+        this._client = new MewClient(opt);
+    }
+    
     override async refresh() {
         await Task.refreshAllCache();
         await super.refresh();
     }
 
 }
+
+const vrollServerInfo: ServerInfo = {
+    apiHost: 'https://api.vroll.me',
+    wsHost: 'wss://gateway.vroll.me/socket.io/?EIO=4&transport=websocket',
+    getHeaders(): Record<string, any> {
+        return {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+            'Referer': 'https://vroll.me/',
+            'Origin': 'https://vroll.me',
+        };
+    },
+    getWsHeaders(): Record<string, any> {
+        return {
+            'Host': 'gateway.vroll.me',
+            'Connection': 'Upgrade',
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+            'Upgrade': 'websocket',
+            'Origin': 'https://vroll.me',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+        };
+    }
+};
