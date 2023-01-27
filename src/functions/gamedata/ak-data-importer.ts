@@ -143,7 +143,7 @@ export class AkDataImporter {
         const genderReg = /.性别.(.*?)\n/;
         const expReg = /.(.*?经验).(.*?)\n/;
         const birthplaceReg = /.出身地.(.*?)\n/;
-        const birthdayReg = /.生日.(.*?)\n/;
+        const birthdayReg = /.(生日|出厂日).(.*?)\n/;
         const raceReg = /.种族.(.*?)\n/;
         const heightReg = /.身高.(.*?)\n/;
         const conditionReg = /.矿石病感染情况.(.*?)\n/;
@@ -172,7 +172,7 @@ export class AkDataImporter {
                 }
                 if (birthdayReg.test(text0)) {
                     const r = birthdayReg.exec(text0)!;
-                    item.birthday = r[1].trim();
+                    item.birthday = r[2].trim();
                 }
                 if (raceReg.test(text0)) {
                     const r = raceReg.exec(text0)!;

@@ -8,6 +8,8 @@ import { DbUtil } from './models/db.js';
 import { ObjectId } from 'mongodb';
 import { MongoStorage } from './storage.js';
 
+logger.logLevel = LogLevel.Debug;
+
 class MockBot extends NanaBot {
     
     override async reply(to: Message, message: OutgoingMessage, messageReplyMode?: MesageReplyMode | undefined): Promise<Result<Message>> {
@@ -158,12 +160,18 @@ async function backup(includeGameData = false) {
 }
 
 async function updateData() {
-    logger.logLevel = LogLevel.Debug;
     await new MongoStorage().init();
     logger.debug('Updating data.');
     await AkDataImporter.updateAll(proxy);
     logger.debug('Data updated.');
 }
 
-consoleTest();
-// updateData();
+async function doBackup() {
+    await new MongoStorage().init();
+    await backup(false);
+    logger.debug('Data backed up.');
+}
+
+// consoleTest();
+updateData();
+// doBackup();
